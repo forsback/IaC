@@ -1,0 +1,55 @@
+trigger: none
+
+parameters:
+- name: env
+  values:
+  - dev
+  - qa   
+  - prod
+  
+variables:
+- template: template-variables.yml # Simple notation in template variable file.
+- group: group-test             # variable group requires name/value notation. Used for testing in this context.
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: Bash@3
+  displayName: Download yq for YAML to JSON conversion
+  inputs:
+    targetType: 'inline'
+    script: |
+      wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O yq
+      chmod +x yq
+
+- task: Bash@3
+  displayName: Convert bicep YAML variables to JSON
+  inputs:
+    targetType: 'inline'
+    script: |
+      ./yq -P ${{variables.bicepYAMLfile}} -o json # Debug
+      ./yq -P ${{variables.bicepYAMLfile}} -o json > ${{variables.bicepJSONfile}}  #uses env parameter to find correct YAML file
+
+- task: AzureCLI@2
+  displayName: Create vnet RG
+  inputs:
+    azureSubscription: 'visual-studio-dev'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az group create \
+      --name ${{ variables.vnetResourceGroup }} \
+      --location westeurope
+
+- task: AzureCLI@2
+  displayName: Deploy vnet/subnet with additional properties
+  inputs:
+    azureSubscription: 'visual-studio-dev'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az deployment group create \
+      --resource-group ${{ variables.vnetResourceGroup }} \
+      --template-file main.bicep 
+
