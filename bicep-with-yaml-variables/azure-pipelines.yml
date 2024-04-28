@@ -9,20 +9,12 @@ parameters:
   
 variables:
 - template: template-variables.yml # Simple notation in template variable file.
-- group: group-test             # variable group requires name/value notation. Used for testing in this context.
+#- group: group-test             # variable group requires name/value notation. Used for testing in this context.
 
 pool:
   vmImage: ubuntu-latest
 
 steps:
-- task: Bash@3
-  displayName: Download yq for YAML to JSON conversion
-  inputs:
-    targetType: 'inline'
-    script: |
-      wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O yq
-      chmod +x yq
-
 - task: Bash@3
   displayName: Convert bicep YAML variables to JSON
   inputs:
@@ -51,5 +43,5 @@ steps:
     inlineScript: |
       az deployment group create \
       --resource-group ${{ variables.vnetResourceGroup }} \
-      --template-file main.bicep 
+      --template-file main.bicep
 
