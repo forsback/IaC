@@ -11,7 +11,6 @@ variables:
 - template: template-variables.yml # Simple notation in template variable file.
   parameters:
     env: ${{ parameters.env }}
-#- group: group-test             # variable group requires name/value notation. Used for testing in this context.
 
 pool:
   vmImage: ubuntu-latest
@@ -24,20 +23,8 @@ steps:
     script: |
       ls
       write-output  "${{ variables.bicepYAMLfile }}"
-      write-output "${{ variables.bicepJSONfile }}"
-      yq -P "${{ variables.bicepYAMLfile }}" -o json # Ouputs to pipeline history file
-      yq -P "${{ variables.bicepYAMLfile }}" -o json > "${{ variables.bicepJSONfile }}"  #uses env parameter to find correct YAML file
-
-# - task: Bash@3
-#   displayName: Convert bicep YAML variables to JSON
-#   inputs:
-#     targetType: 'inline'
-#     script: |
-#       ls
-#       echo  "${{variables.bicepYAMLfile}}"
-#       echo "${{variables.bicepJSONfile}}"
-#       yq -P ${{variables.bicepYAMLfile}} -o json # Debug
-#       yq -P ${{variables.bicepYAMLfile}} -o json > ${{variables.bicepJSONfile}}  #uses env parameter to find correct YAML file
+      write-output "${{ variables.bicepJSONfileNoEnv }}"
+      copy-item  "${{ variables.bicepYAMLfile }}" "${{ variables.bicepJSONfileNoEnv }}"
 
 - task: AzureCLI@2
   displayName: Create vnet RG

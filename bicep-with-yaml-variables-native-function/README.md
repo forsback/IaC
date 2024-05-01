@@ -1,0 +1,1 @@
+# Sample files for yaml variables using native bicep function
